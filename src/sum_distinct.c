@@ -79,5 +79,5 @@ DLLEXPORT double sum_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS
         return 0;
     }
     //return (data->c - data->x * data->y / data->count) / data->count;
-    return data->y;
+    return 100;
 }

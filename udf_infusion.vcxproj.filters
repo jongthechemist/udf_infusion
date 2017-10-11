@@ -117,6 +117,12 @@
     <ClCompile Include="src\xround.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\sum_distinct.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sum_distinct_1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\array.h">

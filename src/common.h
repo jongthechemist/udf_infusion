@@ -50,6 +50,8 @@ inline static char * strndup(const char *s, size_t n)
 #if defined(__WIN__) || defined(_WIN32)
 typedef unsigned __int64 ulonglong; /* Microsofts 64 bit types */
 typedef __int64 longlong;
+#include <winsock.h>
+#define my_socket 
 #else
 typedef unsigned long long ulonglong;
 typedef long long longlong;
