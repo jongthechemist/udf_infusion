@@ -11,11 +11,11 @@ typedef struct Tuple {
 	double value;
 } Tuple;
 
-DLLEXPORT my_bool sum_distinct_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+DLLEXPORT my_bool avg_distinct_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
 	struct Buffer *data;
 
 	if (2 != args->arg_count) {
-		strcpy(message, "sum_distinct must have exactly two arguments");
+		strcpy(message, "avg_distinct must have exactly two arguments");
 		return 1;
 	}
 
@@ -40,13 +40,13 @@ DLLEXPORT my_bool sum_distinct_init(UDF_INIT *initid, UDF_ARGS *args, char *mess
 	return 0;
 }
 
-DLLEXPORT void sum_distinct_clear(UDF_INIT* initid, char* is_null, char *error) {
+DLLEXPORT void avg_distinct_clear(UDF_INIT* initid, char* is_null, char *error) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 	array_truncate(&data->values);
 	data->count = 0;
 }
 
-DLLEXPORT void sum_distinct_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null, char *error) {
+DLLEXPORT void avg_distinct_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null, char *error) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 
 	if (NULL == args->args[0])
@@ -64,7 +64,7 @@ DLLEXPORT void sum_distinct_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null,
 	data->count++;
 }
 
-DLLEXPORT void sum_distinct_deinit(UDF_INIT *initid) {
+DLLEXPORT void avg_distinct_deinit(UDF_INIT *initid) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 
 	if (NULL != data) {
@@ -79,7 +79,7 @@ static int compar(const void *pa, const void *pb) {
 	return ((Tuple *)pa)->key - ((Tuple *)pb)->key;
 }
 
-DLLEXPORT double sum_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS *args,
+DLLEXPORT double avg_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS *args,
 	char *is_null,
 	char *error __attribute__((unused))) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
@@ -93,6 +93,7 @@ DLLEXPORT double sum_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS
 	qsort(data->values.p, data->values.n, sizeof(Tuple), compar);
 
 	double sum = 0;
+	unsigned count = 0;
 	double key;
 	size_t i = 0;
 	Tuple *currentTuple = NULL;
@@ -104,7 +105,8 @@ DLLEXPORT double sum_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS
 		if (currentTuple != NULL && (i == 0 || key - currentTuple->key != 0)) {
 			key = currentTuple->key;
 			sum += currentTuple->value;
+			count++;
 		}
 	}
-	return sum;
+	return sum/count;
 }

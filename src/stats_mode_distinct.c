@@ -1,5 +1,6 @@
 #include "common.h"
 #include "array.h"
+#include "math.h"
 
 struct Buffer {
 	struct array values;
@@ -11,11 +12,11 @@ typedef struct Tuple {
 	double value;
 } Tuple;
 
-DLLEXPORT my_bool sum_distinct_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+DLLEXPORT my_bool stats_mode_distinct_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
 	struct Buffer *data;
 
 	if (2 != args->arg_count) {
-		strcpy(message, "sum_distinct must have exactly two arguments");
+		strcpy(message, "stats_mode_distinct must have exactly two arguments");
 		return 1;
 	}
 
@@ -40,13 +41,13 @@ DLLEXPORT my_bool sum_distinct_init(UDF_INIT *initid, UDF_ARGS *args, char *mess
 	return 0;
 }
 
-DLLEXPORT void sum_distinct_clear(UDF_INIT* initid, char* is_null, char *error) {
+DLLEXPORT void stats_mode_distinct_clear(UDF_INIT* initid, char* is_null, char *error) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 	array_truncate(&data->values);
 	data->count = 0;
 }
 
-DLLEXPORT void sum_distinct_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null, char *error) {
+DLLEXPORT void stats_mode_distinct_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null, char *error) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 
 	if (NULL == args->args[0])
@@ -64,7 +65,7 @@ DLLEXPORT void sum_distinct_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null,
 	data->count++;
 }
 
-DLLEXPORT void sum_distinct_deinit(UDF_INIT *initid) {
+DLLEXPORT void stats_mode_distinct_deinit(UDF_INIT *initid) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 
 	if (NULL != data) {
@@ -79,7 +80,7 @@ static int compar(const void *pa, const void *pb) {
 	return ((Tuple *)pa)->key - ((Tuple *)pb)->key;
 }
 
-DLLEXPORT double sum_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS *args,
+DLLEXPORT double stats_mode_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS *args,
 	char *is_null,
 	char *error __attribute__((unused))) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
@@ -92,19 +93,38 @@ DLLEXPORT double sum_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS
 
 	qsort(data->values.p, data->values.n, sizeof(Tuple), compar);
 
-	double sum = 0;
+	double mode = 0;
+	double value = 0;
+	unsigned count = 0;
 	double key;
-	size_t i = 0;
 	Tuple *currentTuple = NULL;
 
+	size_t n = 0; //HIGHEST COUNT
+	size_t k = 0; //CURRENT COUNT
+	size_t i = 0;
 
 	for (i = 0; i < data->values.n; i++) {
 
 		currentTuple = (Tuple *)((char *)data->values.p + data->values.size*i);
 		if (currentTuple != NULL && (i == 0 || key - currentTuple->key != 0)) {
 			key = currentTuple->key;
-			sum += currentTuple->value;
+
+			if (currentTuple->value != value) {
+				value = currentTuple->value;
+				k = 0;
+			}
+			k++;
+			if (k > n) {
+				mode = value;
+				n = k;
+			}
 		}
 	}
-	return sum;
+
+	if (n == 0) {
+		*is_null = 1;
+		return 0;
+	}
+
+	return mode;
 }

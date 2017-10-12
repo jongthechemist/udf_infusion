@@ -1,5 +1,6 @@
 #include "common.h"
 #include "array.h"
+#include "math.h"
 
 struct Buffer {
 	struct array values;
@@ -7,20 +8,20 @@ struct Buffer {
 };
 
 typedef struct Tuple {
-    double key;
-    double value;
+	double key;
+	double value;
 } Tuple;
 
-DLLEXPORT my_bool sum_distinct_1_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
-    struct Buffer *data;
+DLLEXPORT my_bool stddev_samp_distinct_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+	struct Buffer *data;
 
-    if (2 != args->arg_count) {
-        strcpy(message, "sum distinct must have exaclty two arguments 2");
-        return 1;
-    }
+	if (2 != args->arg_count) {
+		strcpy(message, "stddev_samp_distinct must have exactly two arguments");
+		return 1;
+	}
 
-    args->arg_type[0] = REAL_RESULT;
-    args->arg_type[1] = REAL_RESULT;
+	args->arg_type[0] = REAL_RESULT;
+	args->arg_type[1] = REAL_RESULT;
 
 	data = calloc(1, sizeof(*data));
 	if (NULL == data) {
@@ -33,51 +34,25 @@ DLLEXPORT my_bool sum_distinct_1_init(UDF_INIT *initid, UDF_ARGS *args, char *me
 		return 1;
 	}
 
-    initid->decimals = NOT_FIXED_DEC;
-    initid->maybe_null = 1;
-    initid->ptr = (char*) data;
+	initid->decimals = NOT_FIXED_DEC;
+	initid->maybe_null = 1;
+	initid->ptr = (char*)data;
 
-    return 0;
+	return 0;
 }
 
-DLLEXPORT void sum_distinct_1_clear(UDF_INIT* initid, char* is_null, char *error) {
+DLLEXPORT void stddev_samp_distinct_clear(UDF_INIT* initid, char* is_null, char *error) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 	array_truncate(&data->values);
 	data->count = 0;
 }
 
-DLLEXPORT void sum_distinct_1_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null, char *error) {
+DLLEXPORT void stddev_samp_distinct_add(UDF_INIT* initid, UDF_ARGS* args, char* is_null, char *error) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 
 	if (NULL == args->args[0])
 		return;
 
-
-	/*
-	
-	char *x = args->args[0];
-	double y = *((double *)args->args[1]);
-
-	Tuple *newTuple;
-	newTuple = (Tuple*) malloc(sizeof(Tuple));
-
-	if (NULL == newTuple) {
-		*error = 1;
-		return;
-	}
-
-	strcpy(&newTuple->key, x);
-	newTuple->value = y;
-	
-	if (NULL == array_append(&data->values, &newTuple)) {
-		*error = 1;
-		return;
-	}
-	free(newTuple);
-	newTuple = NULL;
-	*/
-
-	
 	Tuple *newTuple;
 	newTuple = malloc(sizeof(*newTuple));
 	newTuple->key = *((double *)args->args[0]);
@@ -90,7 +65,7 @@ DLLEXPORT void sum_distinct_1_add(UDF_INIT* initid, UDF_ARGS* args, char* is_nul
 	data->count++;
 }
 
-DLLEXPORT void sum_distinct_1_deinit(UDF_INIT *initid) {
+DLLEXPORT void stddev_samp_distinct_deinit(UDF_INIT *initid) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 
 	if (NULL != data) {
@@ -102,14 +77,12 @@ DLLEXPORT void sum_distinct_1_deinit(UDF_INIT *initid) {
 
 
 static int compar(const void *pa, const void *pb) {
-	//return strcmp(((Tuple *)pb)->key, ((Tuple *)pa)->key);
 	return ((Tuple *)pa)->key - ((Tuple *)pb)->key;
 }
 
-DLLEXPORT double sum_distinct_1(UDF_INIT *initid __attribute__((unused)), UDF_ARGS *args,
-		//char *result, unsigned long *length,
-        char *is_null,
-        char *error __attribute__((unused))) {
+DLLEXPORT double stddev_samp_distinct(UDF_INIT *initid __attribute__((unused)), UDF_ARGS *args,
+	char *is_null,
+	char *error __attribute__((unused))) {
 	struct Buffer *data = (struct Buffer *) initid->ptr;
 
 
@@ -119,28 +92,35 @@ DLLEXPORT double sum_distinct_1(UDF_INIT *initid __attribute__((unused)), UDF_AR
 	}
 
 	qsort(data->values.p, data->values.n, sizeof(Tuple), compar);
-	
+
 	double sum = 0;
+	unsigned count = 0;
+	double mean = 0;
+	double sumdiff2 = 0;
 	double key;
 	size_t i = 0;
 	Tuple *currentTuple = NULL;
 
 
 	for (i = 0; i < data->values.n; i++) {
-		
-		//currentTuple = (Tuple *)((char *)data->values.p);
+
 		currentTuple = (Tuple *)((char *)data->values.p + data->values.size*i);
 		if (currentTuple != NULL && (i == 0 || key - currentTuple->key != 0)) {
 			key = currentTuple->key;
 			sum += currentTuple->value;
+			count++;
 		}
-		/*
-		if (i == 0 || strcmp(value, currentTuple->key) != 0) {
-			value = strcpy(value, currentTuple->key);
-			sum += currentTuple->value;
-		}
-		*/
 	}
-	//result = &currentTuple->key;
-	return sum;
+	mean = sum / count;
+
+	for (i = 0; i < data->values.n; i++) {
+
+		currentTuple = (Tuple *)((char *)data->values.p + data->values.size*i);
+		if (currentTuple != NULL && (i == 0 || key - currentTuple->key != 0)) {
+			key = currentTuple->key;
+			sumdiff2 += pow(currentTuple->value - mean, 2);
+		}
+	}
+
+	return sqrt(sumdiff2 / (count-1));
 }
