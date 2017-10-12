@@ -386,6 +386,36 @@ mysql> SELECT SETINT(4283942, 4, 8, 10);
 1 row in set (0.00 sec)
 ```
 
+
+Distinct Aggregate Functions
+----------------------------
+Functions add a first argument for identification of distinct values and returns a result of type double.
+The functions available are: avg_distinct, median_distinct, stats_mode_distinct, stddev_distinct, stddev_samp_distinct and sum_distinct.
+
+Example of sum_distinct
+```
+double sum_distinct(double id, double x);
+
+mysql> SELECT * FROM t1;
++-----+-----+-----+---------+
+| id1 | id2 | id3 | measure |
++-----+-----+-----+---------+
+|   1 |   1 |   1 |      10 |
++-----+-----+-----+---------+
+|   2 |   1 |   1 |		 10 |
++-----+-----+-----+---------+
+|   3 |   2 |   1 |      10 |
++-----+-----+-----+---------+
+
+mysql> SELECT sum_distinct(id1, measure), sum_distinct(id2, measure), sum_distinct(id3, measure) from t1;
++----------------------------+----------------------------+----------------------------+
+| sum_distinct(id1, measure) | sum_distinct(id2, measure) | sum_distinct(id3, measure) |
++----------------------------+----------------------------+----------------------------+
+|                         30 |                         20 |                         10 |
++----------------------------+----------------------------+----------------------------+
+```
+
+
 Testing
 =======
 
