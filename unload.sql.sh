@@ -44,5 +44,11 @@ if_enable "setint" && drop_function "setint"
 if_enable "skewness" && drop_function "skewness"
 if_enable "slug" && drop_function "slug"
 if_enable "xround" && drop_function "xround"
+if_enable "avg_distinct" && drop_function "avg_distinct"
+if_enable "median_distinct" && drop_function "median_distinct"
+if_enable "stats_mode_distinct" && drop_function "stats_mode_distinct"
+if_enable "stddev_distinct" && drop_function "stddev_distinct"
+if_enable "stddev_samp_distinct" && drop_function "stddev_samp_distinct"
+if_enable "sum_distinct" && drop_function "sum_distinct"
 
 true

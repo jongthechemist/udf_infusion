@@ -50,5 +50,11 @@ if_enable "setint" && create_function "setint" "integer"
 if_enable "skewness" && create_agg_function "skewness" "real"
 if_enable "slug" && create_function "slug" "string"
 if_enable "xround" && create_function "xround" "integer"
+if_enable "avg_distinct" && create_agg_function "avg_distinct" "real"
+if_enable "median_distinct" && create_agg_function "median_distinct" "real"
+if_enable "stats_mode_distinct" && create_agg_function "stats_mode_distinct" "real"
+if_enable "stddev_distinct" && create_agg_function "stddev_distinct" "real"
+if_enable "stddev_samp_distinct" && create_agg_function "stddev_samp_distinct" "real"
+if_enable "sum_distinct" && create_agg_function "sum_distinct" "real"
 
 true

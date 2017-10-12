@@ -32,6 +32,13 @@ DROP FUNCTION IF EXISTS skewness;
 DROP FUNCTION IF EXISTS slug;
 DROP FUNCTION IF EXISTS xround;
 
+DROP FUNCTION IF EXISTS avg_distinct;
+DROP FUNCTION IF EXISTS median_distinct;
+DROP FUNCTION IF EXISTS stats_mode_distinct;
+DROP FUNCTION IF EXISTS stddev_distinct;
+DROP FUNCTION IF EXISTS stddev_samp_distinct;
+DROP FUNCTION IF EXISTS sum_distinct;
+
 CREATE FUNCTION bound RETURNS real SONAME 'udf_infusion.dll';
 CREATE FUNCTION bround RETURNS real SONAME 'udf_infusion.dll';
 CREATE AGGREGATE FUNCTION corr RETURNS real SONAME 'udf_infusion.dll';
@@ -63,3 +70,10 @@ CREATE FUNCTION setint RETURNS integer SONAME 'udf_infusion.dll';
 CREATE AGGREGATE FUNCTION skewness RETURNS real SONAME 'udf_infusion.dll';
 CREATE FUNCTION slug RETURNS string SONAME 'udf_infusion.dll';
 CREATE FUNCTION xround RETURNS integer SONAME 'udf_infusion.dll';
+
+CREATE AGGREGATE FUNCTION avg_distinct RETURNS real SONAME 'udf_infusion.dll';
+CREATE AGGREGATE FUNCTION median_distinct RETURNS real SONAME 'udf_infusion.dll';
+CREATE AGGREGATE FUNCTION stats_mode_distinct RETURNS real SONAME 'udf_infusion.dll';
+CREATE AGGREGATE FUNCTION stddev_distinct RETURNS real SONAME 'udf_infusion.dll';
+CREATE AGGREGATE FUNCTION stddev_samp_distinct RETURNS real SONAME 'udf_infusion.dll';
+CREATE AGGREGATE FUNCTION sum_distinct RETURNS real SONAME 'udf_infusion.dll';
