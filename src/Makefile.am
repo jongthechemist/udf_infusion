@@ -34,7 +34,13 @@ udf_infusion_la_SOURCES = \
     slug.c \
     _translate_string.c \
     _quantile.cc \
-    xround.c
+    xround.c \
+    avg_distinct.c \
+    median_distinct.c \
+    stats_mode_distinct.c \
+    stddev_distinct.c \
+    stddev_samp_distinct.c \
+    sum_distinct.c
 
 udf_infusion_la_CFLAGS = -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@
 udf_infusion_la_CXXFLAGS = -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@
